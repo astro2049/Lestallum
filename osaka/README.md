@@ -1,0 +1,3 @@
+# Osaka
+
+:shinto_shrine:

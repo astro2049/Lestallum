@@ -1,16 +1,33 @@
-// https://cloud.tencent.com/document/product/436/35649
-
 import { makeStyles } from "@material-ui/core/styles";
 import { DropzoneArea } from "material-ui-dropzone";
 import Button from "@material-ui/core/Button";
 import { useState } from "react";
+import axios from "axios";
 
-const { REACT_APP_SECRET_ID, REACT_APP_SECRET_KEY } = process.env;
+const { REACT_APP_SERVER_ADDRESS } = process.env;
 
 var COS = require("cos-js-sdk-v5");
+
+// https://cloud.tencent.com/document/product/436/11459
 var cos = new COS({
-    SecretId: REACT_APP_SECRET_ID,
-    SecretKey: REACT_APP_SECRET_KEY,
+    getAuthorization: function (options, callback) {
+        // 异步获取临时密钥
+        axios.get(REACT_APP_SERVER_ADDRESS + "/file/sts").then((response) => {
+            var data = response.data;
+            var credentials = data.Credentials;
+            if (!data || !credentials) {
+                return console.error("credentials invalid");
+            }
+            callback({
+                TmpSecretId: credentials.TmpSecretId,
+                TmpSecretKey: credentials.TmpSecretKey,
+                SecurityToken: credentials.Token,
+                // 建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
+                StartTime: data.StartTime, // 时间戳，单位秒，如：1580000000
+                ExpiredTime: data.ExpiredTime, // 时间戳，单位秒，如：1580000900
+            });
+        });
+    },
 });
 
 const useStyles = makeStyles(() => ({
@@ -32,19 +49,22 @@ const useStyles = makeStyles(() => ({
 function App() {
     const classes = useStyles();
 
+    const Bucket = "paradise-1305422781";
+    const Region = "ap-beijing";
+
     const [file, setFile] = useState();
 
     const handleSave = (files) => {
-        console.log(files);
         setFile(files[0]);
         console.log(files[0]);
     };
 
+    // https://cloud.tencent.com/document/product/436/35649
     const uploadFile = () => {
         cos.uploadFile(
             {
-                Bucket: "paradise-1305422781" /* 必须 */,
-                Region: "ap-beijing" /* 存储桶所在地域，必须字段 */,
+                Bucket: Bucket /* 必须 */,
+                Region: Region /* 存储桶所在地域，必须字段 */,
                 Key: file.path /* 必须 */,
                 Body: file /* 必须 */,
                 SliceSize:
@@ -77,6 +97,7 @@ function App() {
                     variant="contained"
                     color="primary"
                     onClick={() => uploadFile()}
+                    disabled={file === undefined}
                 >
                     Submit
                 </Button>
