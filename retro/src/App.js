@@ -3,6 +3,7 @@ import { DropzoneArea } from "material-ui-dropzone";
 import Button from "@material-ui/core/Button";
 import { useState } from "react";
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 const { REACT_APP_SERVER_ADDRESS } = process.env;
 
@@ -53,19 +54,26 @@ function App() {
     const Region = "ap-chengdu";
 
     const [file, setFile] = useState();
+    var fileKey;
 
     const handleSave = (files) => {
         setFile(files[0]);
         console.log(files[0]);
     };
 
+    const prepareFilename = () => {
+        let extensionName = file.path.split(".").pop();
+        fileKey = uuidv4() + "." + extensionName;
+    };
+
     // https://cloud.tencent.com/document/product/436/35649
     const uploadFile = () => {
+        prepareFilename();
         cos.uploadFile(
             {
                 Bucket: Bucket /* 必须 */,
                 Region: Region /* 存储桶所在地域，必须字段 */,
-                Key: file.path /* 必须 */,
+                Key: fileKey /* 必须 */,
                 Body: file /* 必须 */,
                 SliceSize:
                     1024 *
@@ -81,12 +89,23 @@ function App() {
                 },
                 onFileFinish: function (err, data, options) {
                     console.log(options.Key + "上传" + (err ? "失败" : "完成"));
+                    if (!err) {
+                        registerFile(data.Location, file.name, file.type);
+                    }
                 },
             },
             function (err, data) {
                 console.log(err || data);
             }
         );
+    };
+
+    const registerFile = (url, name, type) => {
+        axios.post(REACT_APP_SERVER_ADDRESS + "/file/register", {
+            url: url,
+            name: name,
+            type: type,
+        });
     };
 
     return (

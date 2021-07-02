@@ -112,7 +112,7 @@ func GetFileInfo(context *gin.Context) {
 		Id   uint   `json:"id"`
 		Url  string `json:"url"`
 		Name string `json:"name"`
-		Type uint   `json:"type"`
+		Type string `json:"type"`
 	}
 	var err error
 	fileInfo := new(fileDto)
