@@ -46,13 +46,7 @@ func HandOutCOSCredential(context *gin.Context) {
 			Statement: []sts.CredentialPolicyStatement{
 				{
 					Action: []string{
-						"name/cos:GetObject",
-						"name/cos:PostObject",
-						"name/cos:PutObject",
-						"name/cos:ListMultipartUploads",
-						"name/cos:InitiateMultipartUpload",
-						"name/cos:UploadPart",
-						"name/cos:CompleteMultipartUpload",
+						"name/cos:*",
 					},
 					Effect: "allow",
 					Resource: []string{
