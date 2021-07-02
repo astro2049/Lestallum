@@ -49,8 +49,8 @@ const useStyles = makeStyles(() => ({
 function App() {
     const classes = useStyles();
 
-    const Bucket = "paradise-1305422781";
-    const Region = "ap-beijing";
+    const Bucket = "heaven-1305422781";
+    const Region = "ap-chengdu";
 
     const [file, setFile] = useState();
 
@@ -92,7 +92,11 @@ function App() {
     return (
         <div className={classes.outerContainer}>
             <div className={classes.fileDropzone}>
-                <DropzoneArea filesLimit="1" onChange={(e) => handleSave(e)} />
+                <DropzoneArea
+                    filesLimit={1}
+                    maxFileSize={1024 * 1024 * 1024 * 10}
+                    onChange={(e) => handleSave(e)}
+                />
                 <Button
                     variant="contained"
                     color="primary"
